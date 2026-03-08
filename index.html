@@ -1,0 +1,2463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZONE — Task Management</title>
+  <meta name="description" content="ZONE — A modern, Google-inspired task management board.">
+  <meta name="google-signin-client_id"
+    content="992901954610-iib1ta0af0mqmq0r10jbud71j61t25vk.apps.googleusercontent.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body>
+
+  <!-- ===== AMBIENT MESH GRADIENT ===== -->
+  <div class="mesh-bg" aria-hidden="true">
+    <div class="mesh-orb mesh-orb--blue"></div>
+    <div class="mesh-orb mesh-orb--red"></div>
+    <div class="mesh-orb mesh-orb--yellow"></div>
+    <div class="mesh-orb mesh-orb--green"></div>
+  </div>
+
+  <style>
+    :root {
+      --g-blue: #4285F4;
+      --g-red: #EA4335;
+      --g-yellow: #FBBC04;
+      --g-green: #34A853;
+      --g-blue-light: #aecbfa;
+      --g-red-light: #f6aea8;
+      --g-yellow-light: #fde293;
+      --g-green-light: #a8dab5;
+      --g-blue-dark: #1a73e8;
+      --g-purple: #a142f4;
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --text-primary: #24292f;
+      --text-secondary: #57606a;
+      --text-tertiary: #8c959f;
+      --border: #d0d7de;
+      --border-light: #e1e4e8;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(208, 215, 222, 0.4);
+      --glass-shadow: 0 4px 12px rgba(31, 35, 40, 0.04);
+      --card-shadow: 0 1px 3px rgba(31, 35, 40, 0.12), 0 1px 2px rgba(31, 35, 40, 0.08);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --ease-out: cubic-bezier(0, 0, 0.2, 1);
+      --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1)
+    }
+
+    body.dark-mode {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --text-primary: #c9d1d9;
+      --text-secondary: #8b949e;
+      --text-tertiary: #6e7681;
+      --border: #30363d;
+      --border-light: #21262d;
+      --glass-bg: rgba(22, 27, 34, 0.85);
+      --glass-border: rgba(48, 54, 61, 0.5);
+      --glass-shadow: 0 8px 32px rgba(1, 4, 9, 0.5);
+      --card-shadow: none
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background .4s, color .4s;
+      -webkit-font-smoothing: antialiased
+    }
+
+    /* ══ AMBIENT MESH GRADIENT BACKGROUND ══ */
+    .mesh-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none
+    }
+
+    .mesh-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      -webkit-filter: blur(120px);
+      will-change: transform;
+      mix-blend-mode: normal
+    }
+
+    /* Light mode: 10-12% opacity */
+    .mesh-orb--blue {
+      width: 55vmax;
+      height: 55vmax;
+      background: radial-gradient(circle, #4285F4 0%, transparent 70%);
+      opacity: .12;
+      top: -15%;
+      left: -10%;
+      animation: orbFloat1 22s var(--ease-in-out) infinite alternate
+    }
+
+    .mesh-orb--red {
+      width: 45vmax;
+      height: 45vmax;
+      background: radial-gradient(circle, #EA4335 0%, transparent 70%);
+      opacity: .10;
+      bottom: -10%;
+      right: -8%;
+      animation: orbFloat2 26s var(--ease-in-out) infinite alternate
+    }
+
+    .mesh-orb--yellow {
+      width: 40vmax;
+      height: 40vmax;
+      background: radial-gradient(circle, #FBBC05 0%, transparent 70%);
+      opacity: .10;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: orbFloat3 20s var(--ease-in-out) infinite alternate
+    }
+
+    .mesh-orb--green {
+      width: 50vmax;
+      height: 50vmax;
+      background: radial-gradient(circle, #34A853 0%, transparent 70%);
+      opacity: .11;
+      top: -5%;
+      right: -15%;
+      animation: orbFloat4 24s var(--ease-in-out) infinite alternate
+    }
+
+    /* Dark mode: softer, deeper presence */
+    body.dark-mode .mesh-orb--blue {
+      opacity: .08
+    }
+
+    body.dark-mode .mesh-orb--red {
+      opacity: .07
+    }
+
+    body.dark-mode .mesh-orb--yellow {
+      opacity: .06
+    }
+
+    body.dark-mode .mesh-orb--green {
+      opacity: .07
+    }
+
+    @keyframes orbFloat1 {
+      0% {
+        transform: translate(0, 0) scale(1)
+      }
+
+      25% {
+        transform: translate(8vw, 12vh) scale(1.05)
+      }
+
+      50% {
+        transform: translate(15vw, 5vh) scale(.95)
+      }
+
+      75% {
+        transform: translate(5vw, 18vh) scale(1.08)
+      }
+
+      100% {
+        transform: translate(12vw, 8vh) scale(1)
+      }
+    }
+
+    @keyframes orbFloat2 {
+      0% {
+        transform: translate(0, 0) scale(1)
+      }
+
+      25% {
+        transform: translate(-10vw, -8vh) scale(1.06)
+      }
+
+      50% {
+        transform: translate(-5vw, -15vh) scale(.92)
+      }
+
+      75% {
+        transform: translate(-12vw, -5vh) scale(1.04)
+      }
+
+      100% {
+        transform: translate(-8vw, -12vh) scale(.97)
+      }
+    }
+
+    @keyframes orbFloat3 {
+      0% {
+        transform: translate(-50%, -50%) scale(1)
+      }
+
+      33% {
+        transform: translate(-40%, -60%) scale(1.1)
+      }
+
+      66% {
+        transform: translate(-60%, -40%) scale(.9)
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(1.05)
+      }
+    }
+
+    @keyframes orbFloat4 {
+      0% {
+        transform: translate(0, 0) scale(1)
+      }
+
+      30% {
+        transform: translate(-12vw, 10vh) scale(1.07)
+      }
+
+      60% {
+        transform: translate(-6vw, 18vh) scale(.94)
+      }
+
+      100% {
+        transform: translate(-10vw, 6vh) scale(1.02)
+      }
+    }
+
+    /* ── INTRO ── */
+    /* ── APP ── */
+    .app {
+      display: block;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1
+    }
+
+    @keyframes appIn {
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes appIn {
+      to {
+        opacity: 1
+      }
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 28px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border-light);
+      transition: background .3s, border .3s
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      cursor: pointer
+    }
+
+    .zone-logo {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border-light);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      width: 34px;
+      height: 34px;
+      overflow: hidden;
+      transition: transform .3s
+    }
+
+    .zone-logo:hover {
+      transform: scale(1.05)
+    }
+
+    .z-cell {
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: .75rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      transition: all .3s
+    }
+
+    .zone-logo:hover .c-blue {
+      background: rgba(66, 133, 244, .15);
+      color: var(--g-blue)
+    }
+
+    .zone-logo:hover .c-red {
+      background: rgba(234, 67, 53, .15);
+      color: var(--g-red)
+    }
+
+    .zone-logo:hover .c-yellow {
+      background: rgba(251, 188, 4, .15);
+      color: #d97008
+    }
+
+    .zone-logo:hover .c-green {
+      background: rgba(52, 168, 83, .15);
+      color: var(--g-green)
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all .2s
+    }
+
+    .nav-btn:hover {
+      background: var(--border-light);
+      color: var(--text-primary)
+    }
+
+    .btn-add-task {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      border: none;
+      border-radius: 22px;
+      background: var(--g-blue);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgba(66, 133, 244, .3);
+      transition: all .25s
+    }
+
+    .btn-add-task:hover {
+      background: var(--g-blue-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 18px rgba(66, 133, 244, .4)
+    }
+
+    .btn-add-task i {
+      font-size: .8rem
+    }
+
+    /* ── PROFILE / AUTH ── */
+    .profile-area {
+      position: relative
+    }
+
+    .btn-signin {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border: 1.5px solid var(--g-blue);
+      border-radius: 22px;
+      background: transparent;
+      color: var(--g-blue);
+      font-family: var(--font-body);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .btn-signin:hover {
+      background: var(--g-blue);
+      color: #fff
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--g-blue);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: .9rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--g-blue), var(--g-purple));
+      transition: transform .2s, box-shadow .2s;
+      overflow: hidden
+    }
+
+    .avatar-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(66, 133, 244, .4)
+    }
+
+    .avatar-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: 48px;
+      right: 0;
+      width: 280px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, .15);
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(-8px) scale(.96);
+      pointer-events: none;
+      transition: all .2s var(--ease-out);
+      z-index: 120
+    }
+
+    .profile-dropdown.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all
+    }
+
+    body.dark-mode .profile-dropdown {
+      box-shadow: 0 12px 48px rgba(0, 0, 0, .4)
+    }
+
+    .pd-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-light)
+    }
+
+    .pd-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--g-blue), var(--g-purple));
+      flex-shrink: 0
+    }
+
+    .pd-info {
+      overflow: hidden
+    }
+
+    .pd-name {
+      font-weight: 600;
+      font-size: .95rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .pd-email {
+      font-size: .78rem;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .pd-btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center
+    }
+
+    .pd-btn-logout {
+      background: rgba(234, 67, 53, .08);
+      color: var(--g-red);
+      margin-top: 4px
+    }
+
+    .pd-btn-logout:hover {
+      background: var(--g-red);
+      color: #fff
+    }
+
+    /* ── DASHBOARD TOOLBAR ── */
+    .dashboard-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1400px;
+      margin: 24px auto 16px;
+      padding: 0 28px;
+      gap: 16px
+    }
+
+    .dt-left {
+      font-family: var(--font-display);
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px
+    }
+
+    .dt-left span {
+      color: var(--text-primary)
+    }
+
+    .dt-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(52, 168, 83, .1);
+      border: 1px solid rgba(52, 168, 83, .2);
+      color: var(--g-green);
+      font-size: .8rem;
+      font-weight: 600;
+      white-space: nowrap
+    }
+
+    .dt-center i {
+      font-size: .85rem
+    }
+
+    .dt-right {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .dt-search {
+      position: relative
+    }
+
+    .dt-search i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      font-size: .85rem;
+      pointer-events: none
+    }
+
+    .dt-search input {
+      width: 220px;
+      padding: 8px 12px 8px 34px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: .85rem;
+      transition: all .2s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px)
+    }
+
+    .dt-search input:focus {
+      outline: none;
+      border-color: var(--g-blue);
+      box-shadow: 0 0 0 3px rgba(66, 133, 244, .15)
+    }
+
+    body.dark-mode .dt-search input {
+      background: rgba(0, 0, 0, .2)
+    }
+
+    /* ── BOARD ── */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 22px;
+      padding: 0 28px 36px;
+      max-width: 1400px;
+      margin: 0 auto
+    }
+
+    .column {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--glass-shadow);
+      transition: transform .3s, box-shadow .3s;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column
+    }
+
+    .column:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 36px rgba(0, 0, 0, .1)
+    }
+
+    body.dark-mode .column:hover {
+      box-shadow: 0 10px 36px rgba(0, 0, 0, .3)
+    }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px
+    }
+
+    .column-info {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .column-indicator {
+      width: 4px;
+      height: 26px;
+      border-radius: 4px
+    }
+
+    .col-todo .column-indicator {
+      background: var(--g-blue)
+    }
+
+    .col-progress .column-indicator {
+      background: var(--g-yellow)
+    }
+
+    .col-done .column-indicator {
+      background: var(--g-green)
+    }
+
+    .column-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 600
+    }
+
+    .column-count {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 7px;
+      border-radius: 12px;
+      font-size: .75rem;
+      font-weight: 700;
+      color: #fff
+    }
+
+    .col-todo .column-count {
+      background: var(--g-blue)
+    }
+
+    .col-progress .column-count {
+      background: var(--g-yellow);
+      color: #202124
+    }
+
+    .col-done .column-count {
+      background: var(--g-green)
+    }
+
+    .column-add {
+      width: 30px;
+      height: 30px;
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      background: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s
+    }
+
+    .column-add:hover {
+      border-color: var(--g-blue);
+      color: var(--g-blue);
+      background: rgba(66, 133, 244, .06)
+    }
+
+    .tasks-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 60px;
+      position: relative
+    }
+
+    /* ── TASK CARDS ── */
+    .task-card {
+      position: relative !important;
+      height: auto !important;
+      top: auto !important;
+      left: auto !important;
+      margin: 0 !important;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 16px 18px;
+      cursor: pointer;
+      transition: all .25s var(--ease-out);
+      overflow: hidden;
+      box-sizing: border-box;
+      box-shadow: var(--card-shadow)
+    }
+
+    .task-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0
+    }
+
+    .col-todo .task-card::before {
+      background: linear-gradient(90deg, var(--g-blue), var(--g-blue-light))
+    }
+
+    .col-progress .task-card::before {
+      background: linear-gradient(90deg, var(--g-yellow), var(--g-yellow-light))
+    }
+
+    .col-done .task-card::before {
+      background: linear-gradient(90deg, var(--g-green), var(--g-green-light))
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(31, 35, 40, 0.15);
+      border-color: var(--g-blue-light)
+    }
+
+    body.dark-mode .task-card:hover {
+      box-shadow: 0 12px 32px rgba(1, 4, 9, 0.9);
+      border-color: rgba(66, 133, 244, 0.4)
+    }
+
+    .task-card.dragging {
+      opacity: 0.3;
+      transform: scale(0.96);
+      border: 2px dashed var(--g-blue);
+      box-shadow: none !important
+    }
+
+    .task-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 6px
+    }
+
+    .task-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+      flex: 1
+    }
+
+    .task-menu {
+      display: flex;
+      gap: 3px;
+      margin-left: 6px
+    }
+
+    .task-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: .8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s
+    }
+
+    .task-btn:hover {
+      background: rgba(66, 133, 244, .1);
+      color: var(--g-blue)
+    }
+
+    .task-btn.delete:hover {
+      background: rgba(234, 67, 53, .1);
+      color: var(--g-red)
+    }
+
+    .task-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px
+    }
+
+    .task-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light)
+    }
+
+    .task-date {
+      font-size: .75rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .task-date i {
+      font-size: .68rem
+    }
+
+    .task-priority {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      padding: 4px 10px;
+      border-radius: 24px;
+      border: none !important
+    }
+
+    .priority-high {
+      background: rgba(234, 67, 53, .15);
+      color: var(--g-red)
+    }
+
+    .priority-medium {
+      background: rgba(251, 188, 4, .15);
+      color: #d97008
+    }
+
+    /* darker orange for contrast against the yellow background */
+    .priority-low {
+      background: rgba(52, 168, 83, .15);
+      color: var(--g-green)
+    }
+
+    .column.drag-over {
+      border: 2px dashed var(--g-blue);
+      background: rgba(66, 133, 244, .04)
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      color: var(--text-tertiary);
+      font-size: .85rem;
+      font-weight: 500;
+      transition: all .3s
+    }
+
+    .col-todo .empty-state {
+      border-color: rgba(66, 133, 244, .2);
+      color: rgba(66, 133, 244, .6)
+    }
+
+    .col-progress .empty-state {
+      border-color: rgba(251, 188, 4, .3);
+      color: rgba(251, 188, 4, .8)
+    }
+
+    .col-done .empty-state {
+      border-color: rgba(52, 168, 83, .2);
+      color: rgba(52, 168, 83, .6)
+    }
+
+    .column.drag-over .empty-state {
+      display: none
+    }
+
+    /* Hide empty state placeholder while natively dragging over the column */
+
+    /* ── MODAL (shared) ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s var(--ease-out)
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      width: 94%;
+      max-width: 440px;
+      padding: 28px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .15);
+      transform: scale(.95);
+      transition: transform .2s var(--ease-out)
+    }
+
+    body.dark-mode .modal-card {
+      border-color: var(--border)
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1)
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px
+    }
+
+    .modal-head h3 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700
+    }
+
+    .modal-close {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 50%;
+      background: var(--border-light);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s
+    }
+
+    .modal-close:hover {
+      background: var(--g-red);
+      color: #fff
+    }
+
+    .field {
+      margin-bottom: 18px
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 8px
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: .9rem;
+      color: var(--text-primary);
+      background: rgba(0, 0, 0, .04);
+      transition: all .2s ease
+    }
+
+    body.dark-mode .field input,
+    body.dark-mode .field textarea,
+    body.dark-mode .field select {
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      outline: none;
+      background: var(--surface);
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, .4), 0 4px 16px rgba(66, 133, 244, .15)
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 80px
+    }
+
+    .priority-options {
+      display: flex;
+      gap: 8px
+    }
+
+    .priority-opt {
+      flex: 1;
+      position: relative
+    }
+
+    .priority-opt input {
+      display: none
+    }
+
+    .priority-opt label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(0, 0, 0, .04);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      transition: all .2s
+    }
+
+    body.dark-mode .priority-opt label {
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .priority-opt input:checked+label.opt-high {
+      background: rgba(234, 67, 53, .15);
+      color: var(--g-red)
+    }
+
+    .priority-opt input:checked+label.opt-medium {
+      background: rgba(251, 188, 4, .15);
+      color: #d97008
+    }
+
+    .priority-opt input:checked+label.opt-low {
+      background: rgba(52, 168, 83, .15);
+      color: var(--g-green)
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px
+    }
+
+    .m-btn {
+      padding: 10px 22px;
+      border-radius: 11px;
+      font-family: var(--font-body);
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .m-btn-primary {
+      background: var(--g-blue);
+      color: #fff;
+      border: none;
+      box-shadow: 0 2px 8px rgba(66, 133, 244, .25)
+    }
+
+    .m-btn-primary:hover {
+      background: var(--g-blue-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(66, 133, 244, .35)
+    }
+
+    .m-btn-ghost {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary)
+    }
+
+    .m-btn-ghost:hover {
+      background: rgba(0, 0, 0, .05);
+      color: var(--text-primary)
+    }
+
+    body.dark-mode .m-btn-ghost:hover {
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .m-btn-danger {
+      background: transparent;
+      border: none;
+      color: var(--g-red)
+    }
+
+    .m-btn-danger:hover {
+      background: rgba(234, 67, 53, .1);
+      color: var(--g-red)
+    }
+
+    /* ── AUTH MODAL ── */
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 22px;
+      border-bottom: 2px solid var(--border-light)
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: none;
+      font-family: var(--font-body);
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all .2s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px
+    }
+
+    .auth-tab.active {
+      color: var(--g-blue);
+      border-bottom-color: var(--g-blue)
+    }
+
+    .auth-step {
+      display: none
+    }
+
+    .auth-step.active {
+      display: block
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      color: var(--text-tertiary);
+      font-size: .8rem
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-light)
+    }
+
+    .otp-inputs {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 16px 0
+    }
+
+    .otp-input {
+      width: 44px;
+      height: 50px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text-primary);
+      transition: border .2s, box-shadow .2s
+    }
+
+    .otp-input:focus {
+      outline: none;
+      border-color: var(--g-blue);
+      box-shadow: 0 0 0 3px rgba(66, 133, 244, .15)
+    }
+
+    .otp-hint {
+      text-align: center;
+      font-size: .8rem;
+      color: var(--text-tertiary);
+      margin-bottom: 8px
+    }
+
+    .otp-hint strong {
+      color: var(--g-blue)
+    }
+
+    /* ── TOAST ── */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      animation: toastIn .3s var(--ease-out);
+      min-width: 280px
+    }
+
+    .toast.toast-out {
+      animation: toastOut .3s var(--ease-out) forwards
+    }
+
+    .toast i {
+      font-size: 1.1rem
+    }
+
+    .toast-success i {
+      color: var(--g-green)
+    }
+
+    .toast-info i {
+      color: var(--g-blue)
+    }
+
+    .toast-error i {
+      color: var(--g-red)
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(40px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes toastOut {
+      to {
+        opacity: 0;
+        transform: translateX(40px)
+      }
+    }
+
+    /* ── FOOTER ── */
+    .app-footer {
+      text-align: center;
+      padding: 28px;
+      color: var(--text-tertiary);
+      font-size: .82rem
+    }
+
+    .app-footer span {
+      background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px) {
+      .navbar {
+        padding: 10px 14px
+      }
+
+      .nav-title {
+        display: none
+      }
+
+      .dashboard-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0 14px
+      }
+
+      .dt-right {
+        width: 100%;
+        justify-content: space-between
+      }
+
+      .dt-search {
+        flex: 1
+      }
+
+      .dt-search input {
+        width: 100%
+      }
+
+      .dt-search input:focus {
+        width: 100%
+      }
+
+      .board {
+        padding: 0 14px 28px;
+        grid-template-columns: 1fr
+      }
+
+      .intro-name {
+        font-size: 2rem;
+        letter-spacing: 6px
+      }
+
+      .profile-dropdown {
+        right: -20px;
+        width: 260px
+      }
+    }
+
+    @media(max-width:480px) {
+      .btn-add-task span {
+        display: none
+      }
+
+      .btn-add-task {
+        padding: 9px 12px
+      }
+
+      .btn-signin span {
+        display: none
+      }
+
+      .btn-signin {
+        padding: 9px 12px
+      }
+    }
+
+    /* ── AUTH & PROFILE MODAL ADDITIONS ── */
+    .pass-wrap {
+      position: relative
+    }
+
+    .eye-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: .9rem
+    }
+
+    .auth-forgot {
+      text-align: right;
+      margin-top: -10px;
+      margin-bottom: 18px;
+      font-size: .8rem
+    }
+
+    .auth-forgot a {
+      color: var(--g-blue);
+      text-decoration: none;
+      font-weight: 600
+    }
+
+    .btn-google {
+      width: 100%;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1.5px solid var(--border-light) !important;
+      color: var(--text-primary);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .02)
+    }
+
+    body.dark-mode .btn-google {
+      background: rgba(255, 255, 255, .05);
+      border-color: transparent !important
+    }
+
+    .btn-google img {
+      width: 18px;
+      height: 18px
+    }
+
+    .guest-banner {
+      background: rgba(66, 133, 244, .1);
+      color: var(--g-blue-dark);
+      text-align: center;
+      padding: 10px;
+      font-size: .85rem;
+      font-weight: 600;
+      display: none
+    }
+
+    body.dark-mode .guest-banner {
+      color: var(--g-blue-light)
+    }
+
+    .guest-banner.active {
+      display: block
+    }
+
+    .prof-avatar-section {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px
+    }
+
+    .prof-avatar-wrap {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--g-blue), var(--g-purple))
+    }
+
+    .prof-avatar {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: var(--font-display)
+    }
+
+    .prof-avatar-hover {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      opacity: 0;
+      transition: opacity .2s
+    }
+
+    .prof-avatar-wrap:hover .prof-avatar-hover {
+      opacity: 1
+    }
+
+    .danger-zone {
+      margin-top: 28px;
+      padding: 20px;
+      border: 1px solid rgba(234, 67, 53, .3);
+      border-radius: 14px;
+      background: rgba(234, 67, 53, .04)
+    }
+
+    .danger-zone h4 {
+      color: var(--g-red);
+      font-size: .95rem;
+      margin-bottom: 6px
+    }
+
+    .danger-zone p {
+      color: var(--text-secondary);
+      font-size: .8rem;
+      margin-bottom: 14px
+    }
+
+    .btn-load {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-load .fa-spinner {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      line-height: 1;
+      font-size: 1rem;
+    }
+
+    .btn-load.loading span {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .btn-load.loading .fa-spinner {
+      display: inline-block;
+    }
+  </style>
+
+  <!-- APP START -->
+
+  <!-- ===== APP ===== -->
+  <div class="app" id="app">
+    <div class="guest-banner" id="guestBanner">You are using Guest Mode. Sign up to save your workspace to the cloud.
+    </div>
+    <nav class="navbar">
+      <div class="nav-brand" title="ZONE">
+        <div class="zone-logo">
+          <span class="z-cell c-blue">Z</span>
+          <span class="z-cell c-red">O</span>
+          <span class="z-cell c-yellow">N</span>
+          <span class="z-cell c-green">E</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn" id="themeToggle" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <button class="btn-add-task" id="addTaskBtn"><i class="fas fa-plus"></i> <span>New Task</span></button>
+        <div class="profile-area" id="profileArea"></div>
+      </div>
+    </nav>
+    <div class="dashboard-toolbar">
+      <div class="dt-left">My Workspace / <span>Current Sprint</span></div>
+      <div class="dt-center" id="progressBadge"><i class="fas fa-check-circle"></i> 0% Completed</div>
+      <div class="dt-right">
+        <div class="dt-search">
+          <i class="fas fa-search"></i>
+          <input type="text" id="taskSearch" placeholder="Search tasks...">
+        </div>
+      </div>
+    </div>
+    <div class="board" id="kanbanBoard"></div>
+  </div>
+
+  <!-- TASK MODAL -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">New Task</h3><button class="modal-close" id="closeModal">✕</button>
+      </div>
+      <form id="taskForm">
+        <input type="hidden" id="taskId">
+        <div class="field"><label for="taskTitle">Title</label><input type="text" id="taskTitle"
+            placeholder="What needs to be done?" required></div>
+        <div class="field"><label for="taskDesc">Description</label><textarea id="taskDesc"
+            placeholder="Add details..."></textarea></div>
+        <div class="field"><label>Priority</label>
+          <div class="priority-options">
+            <div class="priority-opt"><input type="radio" name="priority" value="high" id="p-high"><label for="p-high"
+                class="opt-high">High</label></div>
+            <div class="priority-opt"><input type="radio" name="priority" value="medium" id="p-medium" checked><label
+                for="p-medium" class="opt-medium">Medium</label></div>
+            <div class="priority-opt"><input type="radio" name="priority" value="low" id="p-low"><label for="p-low"
+                class="opt-low">Low</label></div>
+          </div>
+        </div>
+        <div class="modal-btns">
+          <button type="button" class="m-btn m-btn-danger" id="deleteTaskBtn" style="display:none">Delete</button>
+          <div style="flex:1"></div>
+          <button type="button" class="m-btn m-btn-ghost" id="cancelTask">Cancel</button>
+          <button type="submit" class="m-btn m-btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card" style="max-width:400px">
+      <div class="modal-head">
+        <h3 id="authModalTitle">Sign In</h3><button class="modal-close" id="closeAuth">✕</button>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Sign In</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+      <!-- Login Step -->
+      <div class="auth-step active" id="stepLogin">
+        <div class="field"><label for="loginEmail">Email</label><input type="email" id="loginEmail"
+            placeholder="you@example.com" required></div>
+        <div class="field"><label for="loginPass">Password</label>
+          <div class="pass-wrap">
+            <input type="password" id="loginPass" placeholder="Enter password" required>
+            <button type="button" class="eye-btn" onclick="togglePass('loginPass')"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="auth-forgot"><a href="#">Forgot Password?</a></div>
+        <button type="button" class="m-btn m-btn-primary btn-load" style="width:100%" id="loginBtn"><span>Sign
+            In</span><i class="fas fa-spinner fa-spin"></i></button>
+        <div class="auth-divider">or</div>
+        <button type="button" class="m-btn m-btn-ghost btn-google"><img src="https://www.google.com/favicon.ico"
+            alt="G"> Continue with Google</button>
+      </div>
+      <!-- Signup Step -->
+      <div class="auth-step" id="stepSignup">
+        <div class="field"><label for="signupName">Full Name</label><input type="text" id="signupName"
+            placeholder="Jane Doe" required></div>
+        <div class="field"><label for="signupEmail">Email</label><input type="email" id="signupEmail"
+            placeholder="you@example.com" required></div>
+        <div class="field"><label for="signupPass">Password</label>
+          <div class="pass-wrap">
+            <input type="password" id="signupPass" placeholder="Create password (min 6 chars)" required>
+            <button type="button" class="eye-btn" onclick="togglePass('signupPass')"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <button type="button" class="m-btn m-btn-primary btn-load" style="width:100%" id="signupBtn"><span>Create
+            Account</span><i class="fas fa-spinner fa-spin"></i></button>
+        <div class="auth-divider">or</div>
+        <button type="button" class="m-btn m-btn-ghost btn-google"><img src="https://www.google.com/favicon.ico"
+            alt="G"> Continue with Google</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE SETTINGS MODAL -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-card" style="max-width:440px">
+      <div class="modal-head">
+        <h3 id="profileModalTitle">Profile Settings</h3><button class="modal-close" id="closeProfile">✕</button>
+      </div>
+      <div class="prof-avatar-section">
+        <div class="prof-avatar-wrap">
+          <div class="prof-avatar" id="editAvatarPreview">JD</div>
+          <div class="prof-avatar-hover"><i class="fas fa-camera"></i></div>
+        </div>
+      </div>
+      <div class="field"><label>Display Name</label><input type="text" id="editName"></div>
+      <div class="field"><label>Email Address</label><input type="email" id="editEmail" disabled></div>
+      <div class="field"><label>Change Password (Optional)</label>
+        <div class="pass-wrap">
+          <input type="password" id="editPass" placeholder="New password">
+          <button type="button" class="eye-btn" onclick="togglePass('editPass')"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <h4>Danger Zone</h4>
+        <p>Permanently delete your account and all associated workspace data.</p>
+        <button type="button" class="m-btn m-btn-danger" id="deleteAccountBtn">Delete Account</button>
+      </div>
+      <div class="modal-btns" style="margin-top:20px">
+        <button type="button" class="m-btn m-btn-ghost" id="cancelProfile">Cancel</button>
+        <button type="button" class="m-btn m-btn-primary btn-load" id="saveProfileBtn"><span>Save Changes</span><i
+            class="fas fa-spinner fa-spin"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SUPABASE CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    /* =============================================
+       ZONE — Full Application Logic
+       ============================================= */
+
+    // ── SUPABASE CONFIG ──
+    // 1. Create a project at https://supabase.com
+    // 2. Go to Project Settings -> API to copy your URL and Anon Key
+    const SUPABASE_URL = 'https://xomuzravugbnjarlxmag.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvbXV6cmF2dWdibmphcmx4bWFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTU2MDcsImV4cCI6MjA4ODQ3MTYwN30.8PAabgjyo1fe2-oEewYSlHd1wCs0sTsNsKqK8sayuYs';
+    let supabaseClient = null;
+    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE') {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (err) {
+        console.error('Supabase Initialization Error (Invalid Key Format):', err);
+        // Don't crash the app! It will just fallback to Local Storage mode.
+      }
+    }
+
+    // ── Defaults ──
+    const DEFAULTS = [
+      { id: '1', title: 'Design system audit', description: 'Review components for consistency with Material guidelines.', status: 'todo', priority: 'high', createdAt: new Date().toISOString() },
+      { id: '2', title: 'Implement auth flow', description: 'OAuth 2.0 integration with Google Sign-In.', status: 'inprogress', priority: 'high', createdAt: new Date(Date.now() - 86400000).toISOString() },
+      { id: '3', title: 'API documentation', description: 'Write OpenAPI specs and developer guides.', status: 'done', priority: 'medium', createdAt: new Date(Date.now() - 172800000).toISOString() },
+      { id: '4', title: 'Performance benchmarks', description: 'Run Lighthouse audits, optimize Core Web Vitals.', status: 'todo', priority: 'medium', createdAt: new Date().toISOString() },
+      { id: '5', title: 'Unit test coverage', description: 'Achieve 90%+ coverage across all modules.', status: 'inprogress', priority: 'low', createdAt: new Date(Date.now() - 43200000).toISOString() }
+    ];
+    const COLUMNS = [
+      { id: 'todo', title: 'To Do', cls: 'col-todo' },
+      { id: 'inprogress', title: 'In Progress', cls: 'col-progress' },
+      { id: 'done', title: 'Done', cls: 'col-done' }
+    ];
+
+    // ── State ──
+    let tasks = DEFAULTS;
+    try {
+      const savedTasks = localStorage.getItem('zone-tasks');
+      if (savedTasks) {
+        const parsed = JSON.parse(savedTasks);
+        if (Array.isArray(parsed)) {
+          tasks = parsed;
+        } else {
+          localStorage.removeItem('zone-tasks');
+        }
+      }
+    } catch (e) {
+      console.error('Tasks parse error:', e);
+      localStorage.removeItem('zone-tasks');
+      tasks = DEFAULTS;
+    }
+
+    let editingId = null;
+
+    let currentUser = null;
+    try {
+      const savedUser = localStorage.getItem('zone-user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (typeof parsedUser === 'object' && parsedUser !== null) {
+          currentUser = parsedUser;
+        } else {
+          localStorage.removeItem('zone-user');
+        }
+      }
+    } catch (e) {
+      console.error('User parse error:', e);
+      localStorage.removeItem('zone-user');
+      currentUser = null;
+    }
+
+    let generatedOtp = '';
+    let signupData = {};
+
+    // ── Utils ──
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+
+    // ── DOM ──
+    const intro = $('#intro'), app = $('#app'), board = $('#kanbanBoard');
+    const modal = $('#taskModal'), form = $('#taskForm'), titleInput = $('#taskTitle'), descInput = $('#taskDesc'), idInput = $('#taskId'), delBtn = $('#deleteTaskBtn'), modalTitle = $('#modalTitle');
+    const themeBtn = $('#themeToggle');
+    const authModal = $('#authModal'), profileArea = $('#profileArea');
+
+    // ── Toast ──
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      const icons = { success: 'fa-circle-check', info: 'fa-circle-info', error: 'fa-circle-exclamation' };
+      el.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${msg}</span>`;
+      $('#toastContainer').appendChild(el);
+      setTimeout(() => { el.classList.add('toast-out'); setTimeout(() => el.remove(), 300) }, 3500);
+    }
+
+    // ── KANBAN BOARD state ──
+    let searchTerm = '';
+
+    // ── Init Load ──
+    (async () => {
+      // Immediate Render (Local/Defaults)
+      render();
+      renderProfile();
+
+      // Background Cloud Sync
+      if (currentUser && supabaseClient) {
+        try {
+          console.log('ZONE: Cloud syncing...');
+          const { data, error } = await supabaseClient.from('tasks').select('*').eq('user_email', currentUser.email);
+          if (!error && data && data.length > 0) {
+            tasks = data.map(t => ({
+              id: t.id, title: t.title, description: t.description, status: t.status, priority: t.priority, createdAt: t.created_at
+            }));
+            localStorage.setItem('zone-tasks', JSON.stringify(tasks));
+
+            // Re-render with new cloud data
+            render();
+            renderProfile();
+            console.log('ZONE: Cloud sync done.');
+          }
+        } catch (err) { console.error('Cloud Sync error:', err); }
+      }
+    })();
+
+    // ── Theme ──
+    const savedTheme = localStorage.getItem('zone-theme');
+    if (savedTheme === 'dark') { document.body.classList.add('dark-mode'); themeBtn.querySelector('i').className = 'fas fa-sun' }
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      themeBtn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+      localStorage.setItem('zone-theme', isDark ? 'dark' : 'light');
+    });
+
+    // ══════════════════════════════════
+    //  AUTH SYSTEM & PROFILE SETTINGS
+    // ══════════════════════════════════
+    function renderProfile() {
+      const guestBanner = $('#guestBanner');
+      if (currentUser) {
+        guestBanner.classList.remove('active');
+        const initials = (currentUser.username || 'U').substring(0, 2).toUpperCase();
+        profileArea.innerHTML = `
+      <button class="avatar-btn" id="avatarBtn" title="${currentUser.username}">${initials}</button>
+      <div class="profile-dropdown" id="profileDrop">
+        <div class="pd-header">
+          <div class="pd-avatar">${initials}</div>
+          <div class="pd-info"><div class="pd-name">${currentUser.username}</div><div class="pd-email">${currentUser.email}</div></div>
+        </div>
+        <button class="pd-btn pd-btn-ghost" id="profileSettingsBtn" style="margin-bottom:6px; background:rgba(0,0,0,0.03)"><i class="fas fa-gear"></i> Profile Settings</button>
+        <button class="pd-btn pd-btn-logout" id="logoutBtn"><i class="fas fa-right-from-bracket"></i> Sign Out</button>
+      </div>`;
+        $('#avatarBtn').addEventListener('click', e => { e.stopPropagation(); $('#profileDrop').classList.toggle('open') });
+
+        // Open Profile Settings
+        $('#profileSettingsBtn').addEventListener('click', () => {
+          $('#profileDrop').classList.remove('open');
+          $('#editName').value = currentUser.username;
+          $('#editEmail').value = currentUser.email;
+          $('#editPass').value = '';
+          $('#editAvatarPreview').textContent = initials;
+          $('#profileModal').classList.add('active');
+        });
+
+        $('#logoutBtn').addEventListener('click', () => {
+          currentUser = null; localStorage.removeItem('zone-user'); renderProfile(); toast('Signed out to Guest Mode', 'info');
+        });
+        document.addEventListener('click', e => { const d = $('#profileDrop'); if (d && !e.target.closest('.profile-area')) d.classList.remove('open') });
+      } else {
+        guestBanner.classList.add('active');
+        profileArea.innerHTML = `<button class="btn-signin" id="signinBtn"><i class="fas fa-user"></i> <span>Sign In</span></button>`;
+        $('#signinBtn').addEventListener('click', () => openAuth());
+      }
+    }
+
+    // Profile Modal Actions
+    const profileModal = $('#profileModal');
+    function closeProfile() { profileModal.classList.remove('active'); }
+    $('#closeProfile').addEventListener('click', closeProfile);
+    $('#cancelProfile').addEventListener('click', closeProfile);
+
+    $('#saveProfileBtn').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      btn.classList.add('loading');
+      setTimeout(() => {
+        currentUser.username = $('#editName').value.trim();
+        if ($('#editPass').value) {
+          // Logic for changing password in DB goes here
+          toast('Password updated successfully', 'success');
+        }
+        localStorage.setItem('zone-user', JSON.stringify(currentUser));
+        renderProfile();
+        closeProfile();
+        toast('Profile settings saved', 'success');
+        btn.classList.remove('loading');
+      }, 800);
+    });
+
+    $('#deleteAccountBtn').addEventListener('click', () => {
+      if (confirm('Are you absolutely sure? This will delete all your cloud data.')) {
+        currentUser = null; localStorage.removeItem('zone-user');
+        tasks = DEFAULTS; save(); render();
+        renderProfile(); closeProfile(); toast('Account deleted completely', 'error');
+      }
+    });
+
+    function togglePass(id) {
+      const input = $('#' + id);
+      const icon = input.nextElementSibling.querySelector('i');
+      if (input.type === 'password') { input.type = 'text'; icon.className = 'fas fa-eye-slash'; }
+      else { input.type = 'password'; icon.className = 'fas fa-eye'; }
+    }
+
+    function openAuth() { authModal.classList.add('active'); switchTab('login') }
+    function closeAuth() { authModal.classList.remove('active'); resetAuthForms() }
+    $('#closeAuth').addEventListener('click', closeAuth);
+    authModal.addEventListener('click', e => { if (e.target === authModal) closeAuth() });
+
+    function switchTab(tab) {
+      $$('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+      $('#stepLogin').classList.toggle('active', tab === 'login');
+      $('#stepSignup').classList.toggle('active', tab === 'signup');
+      $('#stepOtp').classList.remove('active');
+      $('#authModalTitle').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
+    }
+    $$('.auth-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+    function resetAuthForms() {
+      ['loginEmail', 'loginPass', 'signupName', 'signupEmail', 'signupPass'].forEach(id => { const el = $('#' + id); if (el) el.value = '' });
+      switchTab('login');
+    }
+
+    // Get all registered users from localStorage
+    function getUsers() { return JSON.parse(localStorage.getItem('zone-users')) || [] }
+    function saveUsers(u) { localStorage.setItem('zone-users', JSON.stringify(u)) }
+
+    // Login
+    $('#loginBtn').addEventListener('click', (e) => {
+      const email = $('#loginEmail').value.trim();
+      const pass = $('#loginPass').value;
+      if (!email || !pass) return toast('Fill in all fields', 'error');
+
+      const btn = e.currentTarget;
+      btn.classList.add('loading');
+
+      setTimeout(async () => {
+        btn.classList.remove('loading');
+        const users = getUsers();
+        const user = users.find(u => u.email === email && u.password === pass);
+        if (!user) return toast('Invalid email or password', 'error');
+        currentUser = { username: user.username, email: user.email };
+        localStorage.setItem('zone-user', JSON.stringify(currentUser));
+
+        // Pull their cloud tasks
+        if (supabaseClient) {
+          const { data } = await supabaseClient.from('tasks').select('*').eq('user_email', currentUser.email);
+          if (data && data.length > 0) {
+            tasks = data.map(t => ({ id: t.id, title: t.title, description: t.description, status: t.status, priority: t.priority, createdAt: t.created_at }));
+            localStorage.setItem('zone-tasks', JSON.stringify(tasks));
+            render();
+          }
+        }
+
+        renderProfile(); closeAuth(); toast(`Welcome back, ${user.username}!`, 'success');
+      }, 800);
+    });
+
+    // Signup
+    $('#signupBtn').addEventListener('click', (e) => {
+      const username = $('#signupName').value.trim();
+      const email = $('#signupEmail').value.trim();
+      const pass = $('#signupPass').value;
+      if (!username || !email || !pass) return toast('Fill in all fields', 'error');
+      if (pass.length < 6) return toast('Password must be 6+ characters', 'error');
+      if (!email.includes('@')) return toast('Enter a valid email', 'error');
+
+      const users = getUsers();
+      if (users.find(u => u.email === email)) return toast('Email already registered', 'error');
+
+      const btn = e.currentTarget;
+      btn.classList.add('loading');
+
+      setTimeout(async () => {
+        btn.classList.remove('loading');
+        const newUser = { username, email, password: pass };
+        users.push(newUser); saveUsers(users);
+        currentUser = { username, email };
+        localStorage.setItem('zone-user', JSON.stringify(currentUser));
+
+        // Push their current local (Guest) workstation tasks directly to their new cloud profile
+        await save();
+
+        renderProfile(); closeAuth();
+        toast(`Account created! Local workspace merged to Cloud.`, 'success');
+      }, 1000);
+    });
+
+    // ── Google Identity Services ──
+    const GOOGLE_CLIENT_ID = '992901954610-iib1ta0af0mqmq0r10jbud71j61t25vk.apps.googleusercontent.com';
+    let gisReady = false;
+
+    // Called by GIS after a successful sign-in
+    function handleGoogleCredential(response) {
+      console.log('[ZONE Google] Credential response received:', response);
+
+      if (!response || !response.credential) {
+        console.error('[ZONE Google] ERROR: No credential in response object:', response);
+        toast('Google Sign-In failed — no credential returned.', 'error');
+        return;
+      }
+
+      try {
+        // Decode JWT payload (base64url → JSON)
+        const parts = response.credential.split('.');
+        console.log('[ZONE Google] JWT parts count:', parts.length);
+        // Pad base64url and decode safely
+        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) base64 += '=';
+        const payload = JSON.parse(atob(base64));
+        console.log('[ZONE Google] Decoded JWT payload:', payload);
+
+        const username = payload.name || payload.given_name || payload.email.split('@')[0];
+        const email = payload.email;
+        const picture = payload.picture || null;
+
+        if (!email) {
+          console.error('[ZONE Google] ERROR: No email in payload:', payload);
+          toast('Google Sign-In failed — could not read email.', 'error');
+          return;
+        }
+
+        // Register/update user in local store
+        const users = getUsers();
+        if (!users.find(u => u.email === email)) {
+          users.push({ username, email, password: '__google__', picture });
+          saveUsers(users);
+          console.log('[ZONE Google] New user registered:', email);
+        } else {
+          console.log('[ZONE Google] Existing user found:', email);
+        }
+
+        currentUser = { username, email, picture };
+        localStorage.setItem('zone-user', JSON.stringify(currentUser));
+        console.log('[ZONE Google] currentUser set:', currentUser);
+
+        // Pull cloud tasks if supabase is configured
+        if (supabaseClient) {
+          console.log('[ZONE Google] Fetching cloud tasks for:', email);
+          supabaseClient.from('tasks').select('*').eq('user_email', email).then(({ data, error }) => {
+            if (error) {
+              console.error('[ZONE Google] Supabase fetch error:', error);
+            } else if (data && data.length > 0) {
+              console.log('[ZONE Google] Cloud tasks loaded:', data.length);
+              tasks = data.map(t => ({ id: t.id, title: t.title, description: t.description, status: t.status, priority: t.priority, createdAt: t.created_at }));
+              localStorage.setItem('zone-tasks', JSON.stringify(tasks));
+              render();
+            } else {
+              console.log('[ZONE Google] No cloud tasks found, keeping local tasks.');
+            }
+          });
+        }
+
+        renderProfile();
+        closeAuth();
+        toast(`Welcome, ${username}! 🎉`, 'success');
+
+      } catch (err) {
+        console.error('[ZONE Google] EXCEPTION in handleGoogleCredential:', err);
+        console.error('[ZONE Google] Stack:', err.stack);
+        toast('Google Sign-In failed. Check console for details.', 'error');
+      }
+    }
+
+    function initGoogleSignIn() {
+      console.log('[ZONE Google] initGoogleSignIn() called. google available:', typeof google !== 'undefined');
+      if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+        console.warn('[ZONE Google] GIS not ready yet, retrying in 300ms...');
+        setTimeout(initGoogleSignIn, 300);
+        return;
+      }
+
+      try {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          ux_mode: 'popup'
+        });
+        gisReady = true;
+        console.log('[ZONE Google] GIS initialized successfully with client_id:', GOOGLE_CLIENT_ID);
+
+        // Render the real Google button inside each .btn-google wrapper
+        $$('.btn-google').forEach((btn, i) => {
+          // Create a hidden GIS-rendered button div
+          const gisDiv = document.createElement('div');
+          gisDiv.id = `gis-btn-${i}`;
+          gisDiv.style.cssText = 'position:absolute;inset:0;opacity:0;overflow:hidden;cursor:pointer;z-index:2';
+          btn.style.position = 'relative';
+          btn.appendChild(gisDiv);
+
+          google.accounts.id.renderButton(gisDiv, {
+            type: 'standard',
+            theme: 'outline',
+            size: 'large',
+            width: btn.offsetWidth || 300
+          });
+          console.log(`[ZONE Google] GIS button rendered on .btn-google[${i}]`);
+        });
+
+      } catch (err) {
+        console.error('[ZONE Google] ERROR during initialize():', err);
+      }
+    }
+
+    // Start init — GIS script loads async so poll until ready
+    initGoogleSignIn();
+
+    // Fallback click handler (shows helpful message if GIS not ready)
+    $$('.btn-google').forEach(btn => btn.addEventListener('click', () => {
+      if (!gisReady) {
+        console.warn('[ZONE Google] Button clicked but GIS not ready yet.');
+        toast('Google Sign-In is still loading, please try again in a moment.', 'info');
+      }
+      // If gisReady, the overlaid GIS iframe button handles the click natively
+    }));
+
+    // ══════════════════════════════════
+    //  KANBAN BOARD
+    // ══════════════════════════════════
+
+    function render() {
+      board.innerHTML = '';
+
+      // Calculate Progress Badge based on ALL tasks, irrespective of search
+      tasks = tasks || DEFAULTS;
+      let totalTasks = tasks.length;
+      let totalDone = tasks.filter(t => t.status === 'done').length;
+      const pb = document.getElementById('progressBadge');
+      if (pb) {
+        const perc = totalTasks > 0 ? Math.round((totalDone / totalTasks) * 100) : 0;
+        pb.innerHTML = `<i class="fas fa-check-circle"></i> ${perc}% Completed`;
+      }
+
+      COLUMNS.forEach(col => {
+        const colTasks = tasks.filter(t => {
+          const matchStatus = t.status === col.id;
+          const matchSearch = searchTerm === ''
+            || t.title.toLowerCase().includes(searchTerm)
+            || (t.description && t.description.toLowerCase().includes(searchTerm));
+          return matchStatus && matchSearch;
+        });
+
+        const el = document.createElement('div'); el.className = `column ${col.cls}`; el.dataset.column = col.id;
+
+        // Check if empty to render the placeholder
+        const tasksHtml = colTasks.length > 0
+          ? colTasks.map(t => taskCard(t)).join('')
+          : `<div class="empty-state"><i class="fas fa-inbox" style="font-size: 1.5rem; margin-bottom: 8px; opacity: 0.5;"></i>Drop a task here</div>`;
+
+        el.innerHTML = `<div class="column-header"><div class="column-info"><div class="column-indicator"></div><span class="column-name">${col.title}</span><span class="column-count">${colTasks.length}</span></div><button class="column-add" onclick="openModal('${col.id}')" title="Add task"><i class="fas fa-plus"></i></button></div><div class="tasks-container" data-column="${col.id}">${tasksHtml}</div>`;
+        board.appendChild(el);
+      });
+
+      setupDrag();
+    }
+
+    // Search Listener
+    const taskSearchEl = document.getElementById('taskSearch');
+    if (taskSearchEl) {
+      taskSearchEl.addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        render();
+      });
+    }
+
+    function taskCard(t) {
+      const date = new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `<div class="task-card" draggable="true" data-id="${t.id}"><div class="task-card-header"><div class="task-title">${t.title}</div><div class="task-menu"><button class="task-btn edit-btn" data-id="${t.id}" title="Edit"><i class="fas fa-pen"></i></button><button class="task-btn delete task-del-btn" data-id="${t.id}" title="Delete"><i class="fas fa-trash-can"></i></button></div></div>${t.description ? `<div class="task-desc">${t.description}</div>` : ''}<div class="task-footer"><div class="task-date"><i class="far fa-calendar"></i> ${date}</div><span class="task-priority priority-${t.priority}">${t.priority}</span></div></div>`;
+    }
+
+    let dragClone = null;
+    let lastX = 0;
+    let dragVelocity = 0;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    function setupDrag() {
+      // Ensure GSAP is loaded
+      if (typeof window.gsap === 'undefined') {
+        setTimeout(setupDrag, 100);
+        return;
+      }
+
+      $$('.task-card').forEach(c => {
+        // ── Tactile Button Press ──
+        c.addEventListener('mousedown', () => gsap.to(c, { scale: 0.97, duration: 0.15 }));
+        c.addEventListener('mouseup', () => gsap.to(c, { scale: 1, duration: 0.2, clearProps: "scale" }));
+        c.addEventListener('mouseleave', () => gsap.to(c, { scale: 1, duration: 0.2, clearProps: "scale" }));
+
+        // ── Start High-Fidelity Drag ──
+        c.addEventListener('dragstart', e => {
+          c.classList.add('dragging');
+          // Hide OS Ghost
+          const blankImg = new Image();
+          blankImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+          e.dataTransfer.setDragImage(blankImg, 0, 0);
+
+          const rect = c.getBoundingClientRect();
+          dragOffsetX = e.clientX - rect.left;
+          dragOffsetY = e.clientY - rect.top;
+          lastX = e.clientX;
+
+          // Create Custom Physics Clone
+          dragClone = c.cloneNode(true);
+          dragClone.classList.remove('dragging');
+          dragClone.style.position = 'fixed';
+          dragClone.style.top = '0px';
+          dragClone.style.left = '0px';
+          dragClone.style.width = rect.width + 'px';
+          dragClone.style.height = rect.height + 'px';
+          dragClone.style.zIndex = '9999';
+          dragClone.style.pointerEvents = 'none';
+          dragClone.style.margin = '0';
+          // 3D perspective setup
+          dragClone.style.transformStyle = 'preserve-3d';
+          dragClone.style.transition = 'none';
+
+          document.body.appendChild(dragClone);
+
+          gsap.set(dragClone, {
+            x: rect.left,
+            y: rect.top,
+            scale: 1,
+            boxShadow: document.body.classList.contains('dark-mode') ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.1)'
+          });
+
+          // Lift off effect
+          gsap.to(dragClone, {
+            scale: 1.05,
+            boxShadow: document.body.classList.contains('dark-mode') ? '0 30px 60px rgba(0,0,0,0.6)' : '0 30px 60px rgba(66,133,244,0.18)',
+            duration: 0.3,
+            ease: 'power3.out'
+          });
+        });
+
+        // ── Velocity-Based 3D Skew During Drag ──
+        c.addEventListener('drag', e => {
+          if (!dragClone || e.clientX === 0) return;
+          const x = e.clientX - dragOffsetX;
+          const y = e.clientY - dragOffsetY;
+
+          const dx = e.clientX - lastX;
+          lastX = e.clientX;
+          dragVelocity = dragVelocity * 0.8 + dx * 0.2;
+
+          const tilt = Math.max(-25, Math.min(25, dragVelocity * 1.5));
+
+          gsap.to(dragClone, {
+            x: x,
+            y: y,
+            rotateZ: tilt * 0.08,
+            rotateY: tilt,
+            duration: 0.1,
+            ease: "none"
+          });
+        });
+
+        // ── Drop with Spring Physics ──
+        c.addEventListener('dragend', () => {
+          c.classList.remove('dragging');
+          $$('.column').forEach(x => x.classList.remove('drag-over'));
+
+          const id = c.dataset.id;
+          // Wait for DOM to update from 'drop' event
+          requestAnimationFrame(() => {
+            const targetCard = document.querySelector(`.task-card[data-id="${id}"]`);
+            if (targetCard && dragClone) {
+              const finalRect = targetCard.getBoundingClientRect();
+
+              targetCard.style.opacity = '0'; // Hide real card temporarily
+
+              gsap.to(dragClone, {
+                x: finalRect.left,
+                y: finalRect.top,
+                rotateY: 0,
+                rotateZ: 0,
+                scale: 1,
+                boxShadow: '0 8px 24px rgba(0,0,0,0)',
+                duration: 0.7,
+                ease: "elastic.out(1, 0.6)", // spring effect
+                onComplete: () => {
+                  if (dragClone) dragClone.remove();
+                  dragClone = null;
+                  targetCard.style.opacity = '1';
+                  targetCard.style.removeProperty('opacity');
+                }
+              });
+            } else {
+              if (dragClone) dragClone.remove();
+              dragClone = null;
+            }
+          });
+        });
+      });
+
+      // Native Drop Zones
+      $$('.tasks-container').forEach(ct => {
+        ct.addEventListener('dragover', e => {
+          e.preventDefault();
+          ct.closest('.column').classList.add('drag-over');
+          const d = document.querySelector('.dragging');
+          if (!d) return;
+          const a = getAfter(ct, e.clientY);
+          if (a) {
+            if (a !== d.nextSibling) ct.insertBefore(d, a);
+          } else {
+            if (ct.lastChild !== d) ct.appendChild(d);
+          }
+        });
+        ct.addEventListener('dragleave', e => {
+          if (!ct.contains(e.relatedTarget)) ct.closest('.column').classList.remove('drag-over');
+        });
+        ct.addEventListener('drop', e => {
+          e.preventDefault();
+          ct.closest('.column').classList.remove('drag-over');
+          const d = document.querySelector('.dragging');
+          if (!d) return;
+
+          const draggedId = d.dataset.id;
+          // Update status
+          tasks = tasks.map(t => t.id === draggedId ? { ...t, status: ct.dataset.column } : t);
+
+          // Re-sync array order flawlessly based on current DOM to prevent duplicates or overlapping
+          const allDomCards = Array.from(document.querySelectorAll('.task-card'));
+          const newTasksOrder = [];
+          const usedIds = new Set();
+
+          // 1. Add them in their new DOM order
+          allDomCards.forEach(card => {
+            const id = card.dataset.id;
+            if (!usedIds.has(id)) {
+              const match = tasks.find(x => x.id === id);
+              if (match) {
+                newTasksOrder.push(match);
+                usedIds.add(id);
+              }
+            }
+          });
+          // 2. Fallback for any tasks missing from DOM
+          tasks.forEach(t => {
+            if (!usedIds.has(t.id)) newTasksOrder.push(t);
+          });
+
+          tasks = newTasksOrder;
+          save();
+          render();
+        });
+      });
+    }
+    function getAfter(ct, y) { const els = [...ct.querySelectorAll('.task-card:not(.dragging)')]; return els.reduce((cl, el) => { const b = el.getBoundingClientRect(); const o = y - b.top - b.height / 2; return o < 0 && o > cl.offset ? { offset: o, element: el } : cl }, { offset: -Infinity }).element }
+
+    // ── Task Modal ──
+    function openModal(defaultStatus = 'todo', taskId = null) {
+      if (taskId) { const t = tasks.find(x => x.id === taskId); if (!t) return; modalTitle.textContent = 'Edit Task'; titleInput.value = t.title; descInput.value = t.description || ''; idInput.value = t.id; editingId = t.id; const r = document.querySelector(`input[name="priority"][value="${t.priority}"]`); if (r) r.checked = true; delBtn.style.display = 'block' }
+      else { modalTitle.textContent = 'New Task'; form.reset(); idInput.value = ''; editingId = null; $('#p-medium').checked = true; delBtn.style.display = 'none' }
+      modal.dataset.status = defaultStatus; modal.classList.add('active'); setTimeout(() => titleInput.focus(), 100);
+    }
+    function closeModal() { modal.classList.remove('active'); editingId = null }
+    $('#closeModal').addEventListener('click', closeModal);
+    $('#cancelTask').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal() });
+    $('#addTaskBtn').addEventListener('click', () => openModal());
+
+    form.addEventListener('submit', e => {
+      e.preventDefault(); const title = titleInput.value.trim(), desc = descInput.value.trim(), priority = document.querySelector('input[name="priority"]:checked').value; if (!title) return;
+      if (editingId) tasks = tasks.map(t => t.id === editingId ? { ...t, title, description: desc, priority } : t);
+      else {
+        const uniqueKey = 'task_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+        tasks.push({ id: uniqueKey, title, description: desc, priority, status: modal.dataset.status || 'todo', createdAt: new Date().toISOString() });
+      }
+      save(); render(); closeModal();
+    });
+    delBtn.addEventListener('click', async () => {
+      if (editingId) {
+        tasks = tasks.filter(t => t.id !== editingId);
+        if (currentUser && supabaseClient) await supabaseClient.from('tasks').delete().eq('id', editingId);
+        save(); render(); closeModal();
+      }
+    });
+    board.addEventListener('click', async e => {
+      const eb = e.target.closest('.edit-btn'), db = e.target.closest('.task-del-btn');
+      if (eb) openModal(null, eb.dataset.id);
+      if (db) {
+        const id = db.dataset.id;
+        tasks = tasks.filter(t => t.id !== id);
+        if (currentUser && supabaseClient) await supabaseClient.from('tasks').delete().eq('id', id);
+        save(); render();
+      }
+    });
+
+    async function save() {
+      localStorage.setItem('zone-tasks', JSON.stringify(tasks));
+      if (currentUser && supabaseClient && tasks.length > 0) {
+        const upsertData = tasks.map(t => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          status: t.status,
+          priority: t.priority,
+          user_email: currentUser.email,
+          created_at: t.createdAt
+        }));
+        await supabaseClient.from('tasks').upsert(upsertData);
+      }
+    }
+  </script>
+</body>
+
+</html>
